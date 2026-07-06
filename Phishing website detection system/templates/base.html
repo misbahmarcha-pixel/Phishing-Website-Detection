@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}PhishGuard AI{% endblock %}</title>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Exo+2:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-dark:#050a10;--bg-panel:rgba(5,14,26,0.97);--bg-card:rgba(8,25,46,0.88);
+    --accent:#00d4ff;--accent2:#00ff9f;--danger:#ff4466;--warn:#ffaa00;
+    --text-primary:#e0f0ff;--text-muted:#6a8898;--border:rgba(0,212,255,0.15);
+    --glow:0 0 24px rgba(0,212,255,0.28);--glow-green:0 0 24px rgba(0,255,159,0.3);--glow-red:0 0 24px rgba(255,68,102,0.3);
+    --font-head:'Exo 2',sans-serif;--font-body:'Rajdhani',sans-serif;--font-mono:'Share Tech Mono',monospace;
+    --navbar-h:66px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  body{background:var(--bg-dark);color:var(--text-primary);font-family:var(--font-body);font-size:16px;min-height:100vh;overflow-x:hidden;}
+
+  body::before{
+    content:'';position:fixed;inset:0;
+    background-image:linear-gradient(rgba(0,212,255,0.033) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.033) 1px,transparent 1px);
+    background-size:55px 55px;animation:gridMove 22s linear infinite;pointer-events:none;z-index:0;
+  }
+  @keyframes gridMove{0%{background-position:0 0}100%{background-position:55px 55px}}
+
+  .particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+  .particle{position:absolute;width:2px;height:2px;background:var(--accent);border-radius:50%;animation:floatUp linear infinite;opacity:.35;}
+  @keyframes floatUp{0%{transform:translateY(100vh) translateX(0);opacity:0}10%{opacity:.5}90%{opacity:.3}100%{transform:translateY(-10vh) translateX(20px);opacity:0}}
+
+  /* ═══ NAVBAR ═══ */
+  .navbar-phish{background:var(--bg-panel);border-bottom:1px solid var(--border);backdrop-filter:blur(28px);height:var(--navbar-h);position:sticky;top:0;z-index:999;}
+  .navbar-phish>.wrap{display:flex;align-items:center;justify-content:space-between;height:100%;padding:0 1.5rem;max-width:1400px;margin:0 auto;}
+
+  .nav-brand{font-family:var(--font-head);font-weight:800;font-size:1.4rem;letter-spacing:2px;color:var(--accent)!important;text-decoration:none;text-shadow:0 0 16px rgba(0,212,255,0.5);white-space:nowrap;display:flex;align-items:center;gap:.5rem;}
+  .nav-brand span{color:var(--accent2);}
+  .nav-brand .sdot{width:7px;height:7px;background:var(--accent2);border-radius:50%;box-shadow:0 0 8px var(--accent2);animation:sdpulse 2s ease-in-out infinite;}
+  @keyframes sdpulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+  .nav-center{display:flex;align-items:center;gap:.2rem;flex:1;justify-content:center;}
+  .nav-lnk{color:var(--text-muted)!important;font-family:var(--font-body);font-weight:600;font-size:.875rem;letter-spacing:.8px;text-transform:uppercase;padding:.42rem .8rem!important;border-radius:5px;transition:all .2s;text-decoration:none!important;white-space:nowrap;display:flex;align-items:center;gap:.3rem;position:relative;}
+  .nav-lnk:hover{color:var(--accent)!important;background:rgba(0,212,255,0.07);}
+  .nav-lnk.active{color:var(--accent)!important;}
+  .nav-lnk.active::after{content:'';position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:60%;height:2px;background:var(--accent);border-radius:2px;}
+
+  .nav-sep{width:1px;height:20px;background:var(--border);margin:0 .3rem;flex-shrink:0;}
+
+  .nav-right{display:flex;align-items:center;gap:.5rem;flex-shrink:0;}
+
+  /* User menu */
+  .umenu-wrap{position:relative;}
+  .umenu-btn{display:flex;align-items:center;gap:.55rem;background:rgba(0,212,255,0.07);border:1px solid var(--border);border-radius:8px;padding:.35rem .9rem .35rem .5rem;cursor:pointer;transition:all .2s;color:var(--text-primary);font-family:var(--font-body);font-weight:600;font-size:.88rem;user-select:none;}
+  .umenu-btn:hover{border-color:var(--accent);box-shadow:var(--glow);}
+  .uavatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:700;color:var(--bg-dark);font-family:var(--font-head);flex-shrink:0;}
+  .umenu-dropdown{position:absolute;top:calc(100% + 10px);right:0;background:var(--bg-panel);border:1px solid var(--border);border-radius:11px;min-width:230px;padding:.5rem 0;box-shadow:0 20px 50px rgba(0,0,0,0.6);display:none;z-index:1001;animation:ddFade .15s ease;}
+  @keyframes ddFade{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+  .umenu-wrap.open .umenu-dropdown{display:block;}
+  .dd-head{padding:.75rem 1rem .6rem;border-bottom:1px solid var(--border);margin-bottom:.4rem;}
+  .dd-name{font-family:var(--font-head);font-weight:700;font-size:.95rem;color:var(--text-primary);}
+  .dd-email{font-family:var(--font-mono);font-size:.7rem;color:var(--text-muted);margin-top:2px;}
+  .dd-item{display:flex;align-items:center;gap:.6rem;padding:.48rem 1rem;color:var(--text-muted)!important;font-family:var(--font-body);font-size:.875rem;font-weight:600;text-decoration:none!important;transition:all .15s;cursor:pointer;}
+  .dd-item:hover{color:var(--accent)!important;background:rgba(0,212,255,0.06);}
+  .dd-item.dd-danger:hover{color:var(--danger)!important;background:rgba(255,68,102,0.06);}
+  .dd-item i{width:16px;text-align:center;}
+  .dd-sep{height:1px;background:var(--border);margin:.35rem 0;}
+
+  /* Hamburger */
+  .hbg{display:none;flex-direction:column;gap:5px;cursor:pointer;padding:6px;background:none;border:none;z-index:1000;}
+  .hbg span{display:block;width:22px;height:2px;background:var(--text-muted);border-radius:2px;transition:all .3s;}
+  .hbg.open span:nth-child(1){transform:rotate(45deg) translate(5px,5px);}
+  .hbg.open span:nth-child(2){opacity:0;}
+  .hbg.open span:nth-child(3){transform:rotate(-45deg) translate(5px,-5px);}
+
+  /* Mobile drawer */
+  .mobile-drawer{
+    display:none;
+    position:fixed;top:var(--navbar-h);left:0;right:0;bottom:0;
+    background:var(--bg-panel);border-top:1px solid var(--border);
+    backdrop-filter:blur(28px);z-index:998;padding:1.5rem;
+    flex-direction:column;gap:.25rem;overflow-y:auto;
+  }
+  .mobile-drawer.open{display:flex;}
+  .mobile-drawer .nav-lnk{font-size:1rem;padding:.7rem 1rem!important;}
+  .mobile-drawer .nav-sep{width:100%;height:1px;margin:.5rem 0;}
+
+  @media(max-width:991px){
+    .nav-center,.nav-right{display:none!important;}
+    .hbg{display:flex;}
+  }
+
+  /* ═══ SHARED COMPONENTS ═══ */
+  .card-phish{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;backdrop-filter:blur(12px);position:relative;overflow:hidden;}
+  .card-phish::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.6;}
+
+  .btn-phish{background:transparent;border:1px solid var(--accent);color:var(--accent);font-family:var(--font-head);font-weight:600;letter-spacing:1.5px;text-transform:uppercase;padding:.6rem 1.8rem;border-radius:5px;transition:all .3s;position:relative;overflow:hidden;cursor:pointer;text-decoration:none!important;display:inline-flex;align-items:center;gap:.4rem;}
+  .btn-phish::before{content:'';position:absolute;inset:0;background:var(--accent);transform:scaleX(0);transform-origin:left;transition:transform .3s;z-index:-1;}
+  .btn-phish:hover{color:var(--bg-dark)!important;box-shadow:var(--glow);}
+  .btn-phish:hover::before{transform:scaleX(1);}
+
+  .btn-phish-solid{background:var(--accent);border:1px solid var(--accent);color:var(--bg-dark);font-family:var(--font-head);font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:.6rem 1.8rem;border-radius:5px;transition:all .3s;cursor:pointer;text-decoration:none!important;display:inline-flex;align-items:center;gap:.4rem;}
+  .btn-phish-solid:hover{box-shadow:var(--glow);color:var(--bg-dark)!important;opacity:.92;}
+
+  .btn-danger-phish{background:transparent;border:1px solid var(--danger);color:var(--danger);font-family:var(--font-head);font-weight:600;letter-spacing:1px;padding:.4rem 1rem;border-radius:4px;transition:all .25s;cursor:pointer;font-size:.85rem;}
+  .btn-danger-phish:hover{background:var(--danger);color:#fff;box-shadow:var(--glow-red);}
+
+  .btn-google{display:flex;align-items:center;justify-content:center;gap:.75rem;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.14);color:var(--text-primary)!important;font-family:var(--font-body);font-weight:600;font-size:.95rem;padding:.7rem 1.5rem;border-radius:5px;cursor:pointer;transition:all .25s;text-decoration:none!important;width:100%;}
+  .btn-google:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.28);color:var(--text-primary)!important;}
+
+  .input-phish{background:rgba(0,0,0,0.4)!important;border:1px solid var(--border)!important;color:var(--text-primary)!important;font-family:var(--font-mono)!important;border-radius:5px!important;padding:.75rem 1rem!important;transition:all .3s;width:100%;}
+  .input-phish:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(0,212,255,0.12)!important;outline:none!important;}
+  .input-phish::placeholder{color:var(--text-muted)!important;}
+
+  .badge-phishing{background:rgba(255,68,102,0.15);border:1px solid var(--danger);color:var(--danger);font-family:var(--font-mono);padding:4px 12px;border-radius:3px;font-size:.8rem;letter-spacing:1px;}
+  .badge-legit{background:rgba(0,255,159,0.12);border:1px solid var(--accent2);color:var(--accent2);font-family:var(--font-mono);padding:4px 12px;border-radius:3px;font-size:.8rem;letter-spacing:1px;}
+
+  .section-heading{font-family:var(--font-head);font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:.5rem;}
+
+  .alert-phish{background:rgba(255,68,102,0.08);border:1px solid rgba(255,68,102,0.28);color:#ff8899;border-radius:7px;padding:.75rem 1rem;font-size:.9rem;}
+  .alert-success-phish{background:rgba(0,255,159,0.07);border:1px solid rgba(0,255,159,0.28);color:var(--accent2);border-radius:7px;padding:.75rem 1rem;font-size:.9rem;}
+
+  @keyframes scanLine{0%{top:0}100%{top:100%}}
+  .scan-line{position:absolute;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);animation:scanLine 2s linear infinite;pointer-events:none;}
+
+  .conf-bar-wrap{background:rgba(0,0,0,0.4);border-radius:3px;height:6px;width:100%;overflow:hidden;}
+  .conf-bar-fill{height:100%;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1);}
+
+  .table-phish{font-family:var(--font-body);font-size:.9rem;border-collapse:separate;border-spacing:0 4px;width:100%;}
+  .table-phish thead th{font-family:var(--font-head);font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);border:none;padding:.5rem 1rem;}
+  .table-phish tbody tr{background:rgba(8,25,46,0.6);border-radius:6px;transition:all .2s;}
+  .table-phish tbody tr:hover{background:rgba(0,212,255,0.05);}
+  .table-phish tbody td{border:none;padding:.85rem 1rem;border-top:1px solid var(--border);border-bottom:1px solid var(--border);vertical-align:middle;}
+  .table-phish tbody td:first-child{border-left:1px solid var(--border);border-radius:6px 0 0 6px;}
+  .table-phish tbody td:last-child{border-right:1px solid var(--border);border-radius:0 6px 6px 0;}
+  .url-cell{max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--font-mono);font-size:.78rem;color:var(--text-muted);}
+
+  .stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:1.5rem;text-align:center;transition:transform .2s;}
+  .stat-card:hover{transform:translateY(-3px);box-shadow:var(--glow);}
+  .stat-number{font-family:var(--font-mono);font-size:2.5rem;font-weight:400;line-height:1;}
+  .stat-label{font-family:var(--font-body);font-size:.78rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-top:6px;}
+
+  .main-content{position:relative;z-index:1;}
+  ::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--bg-dark);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+  .modal-phish{background:rgba(5,10,16,0.9);}
+  .modal-phish .modal-content{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;color:var(--text-primary);}
+  .modal-phish .modal-header{border-bottom:1px solid var(--border);padding:1.25rem 1.5rem;}
+  .modal-phish .modal-body{padding:1.5rem;}
+  .modal-phish .btn-close{filter:invert(1);}
+
+  /* Footer */
+  .footer-phish{background:var(--bg-panel);border-top:1px solid var(--border);padding:3rem 0 2rem;margin-top:5rem;position:relative;z-index:1;}
+  .footer-brand{font-family:var(--font-head);font-weight:800;font-size:1.3rem;color:var(--accent);letter-spacing:2px;}
+  .footer-brand span{color:var(--accent2);}
+  .footer-link{color:var(--text-muted);text-decoration:none;font-size:.875rem;transition:color .2s;}
+  .footer-link:hover{color:var(--accent);}
+  .footer-heading{font-family:var(--font-head);font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;}
+</style>
+{% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div class="particles" id="particles"></div>
+
+<!-- ═════════════ NAVBAR ═════════════ -->
+<nav class="navbar-phish">
+  <div class="wrap">
+    <!-- Brand -->
+    <a href="{{ url_for('index') }}" class="nav-brand">
+      <i class="fa fa-shield-halved"></i>Phish<span>Guard</span>&nbsp;AI
+      <div class="sdot"></div>
+    </a>
+
+    <!-- Desktop center links -->
+    <div class="nav-center">
+      <a href="{{ url_for('index') }}"     class="nav-lnk {% if request.endpoint=='index' %}active{% endif %}"><i class="fa fa-house"></i> Home</a>
+      <a href="{{ url_for('about') }}"     class="nav-lnk {% if request.endpoint=='about' %}active{% endif %}"><i class="fa fa-circle-info"></i> About</a>
+      <a href="{{ url_for('contact') }}"   class="nav-lnk {% if request.endpoint=='contact' %}active{% endif %}"><i class="fa fa-envelope"></i> Contact</a>
+      <a href="{{ url_for('help_page') }}" class="nav-lnk {% if request.endpoint=='help_page' %}active{% endif %}"><i class="fa fa-circle-question"></i> Help &amp; FAQ</a>
+      {% if session.user_id %}
+      <div class="nav-sep"></div>
+      <a href="{{ url_for('dashboard') }}"  class="nav-lnk {% if request.endpoint=='dashboard' %}active{% endif %}"><i class="fa fa-chart-line"></i> Dashboard</a>
+      <a href="{{ url_for('check_page') }}" class="nav-lnk {% if request.endpoint=='check_page' %}active{% endif %}"><i class="fa fa-magnifying-glass"></i> Analyse</a>
+      {% endif %}
+    </div>
+
+    <!-- Desktop right: auth -->
+    <div class="nav-right">
+      {% if session.user_id %}
+      <div class="umenu-wrap" id="umenuWrap">
+        <div class="umenu-btn" id="umenuBtn">
+          <div class="uavatar">{{ session.username[0]|upper }}</div>
+          <span>{{ session.username }}</span>
+          <i class="fa fa-chevron-down" style="font-size:.65rem;color:var(--text-muted);margin-left:2px;"></i>
+          <div class="umenu-dropdown">
+            <div class="dd-head">
+              <div class="dd-name">{{ session.username }}</div>
+              <div class="dd-email" id="ddEmailDesktop">Loading…</div>
+            </div>
+            <a href="{{ url_for('account') }}"   class="dd-item"><i class="fa fa-user-gear" style="color:var(--accent)"></i> My Account</a>
+            <a href="{{ url_for('dashboard') }}"  class="dd-item"><i class="fa fa-chart-line" style="color:var(--accent)"></i> Dashboard</a>
+            <a href="{{ url_for('check_page') }}" class="dd-item"><i class="fa fa-magnifying-glass" style="color:var(--accent)"></i> Analyse URL</a>
+            <div class="dd-sep"></div>
+            <a href="{{ url_for('logout') }}" class="dd-item dd-danger"><i class="fa fa-right-from-bracket" style="color:var(--danger)"></i> Sign Out</a>
+          </div>
+        </div>
+      </div>
+      {% else %}
+      <a href="{{ url_for('login') }}"  class="btn-phish"       style="padding:.42rem 1.1rem;font-size:.82rem;">Sign In</a>
+      <a href="{{ url_for('signup') }}" class="btn-phish-solid"  style="padding:.42rem 1.1rem;font-size:.82rem;">Get Started</a>
+      {% endif %}
+    </div>
+
+    <!-- Hamburger -->
+    <button class="hbg" id="hbg" aria-label="Menu"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- Mobile Drawer -->
+<div class="mobile-drawer" id="mobileDrawer">
+  <a href="{{ url_for('index') }}"     class="nav-lnk"><i class="fa fa-house"></i> Home</a>
+  <a href="{{ url_for('about') }}"     class="nav-lnk"><i class="fa fa-circle-info"></i> About Us</a>
+  <a href="{{ url_for('contact') }}"   class="nav-lnk"><i class="fa fa-envelope"></i> Contact</a>
+  <a href="{{ url_for('help_page') }}" class="nav-lnk"><i class="fa fa-circle-question"></i> Help &amp; FAQ</a>
+  <div class="nav-sep"></div>
+  {% if session.user_id %}
+  <a href="{{ url_for('dashboard') }}"  class="nav-lnk"><i class="fa fa-chart-line"></i> Dashboard</a>
+  <a href="{{ url_for('check_page') }}" class="nav-lnk"><i class="fa fa-magnifying-glass"></i> Analyse URL</a>
+  <a href="{{ url_for('account') }}"    class="nav-lnk"><i class="fa fa-user-gear"></i> My Account</a>
+  <div class="nav-sep"></div>
+  <a href="{{ url_for('logout') }}" class="nav-lnk" style="color:var(--danger)!important;"><i class="fa fa-right-from-bracket"></i> Sign Out</a>
+  {% else %}
+  <a href="{{ url_for('login') }}"  class="nav-lnk"><i class="fa fa-right-to-bracket"></i> Sign In</a>
+  <a href="{{ url_for('signup') }}" class="nav-lnk"><i class="fa fa-user-plus"></i> Create Account</a>
+  {% endif %}
+</div>
+
+<div class="main-content">{% block content %}{% endblock %}</div>
+
+<!-- Footer -->
+<footer class="footer-phish">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="footer-brand mb-2"><i class="fa fa-shield-halved me-2"></i>Phish<span>Guard</span> AI</div>
+        <p style="color:var(--text-muted);font-size:.875rem;line-height:1.7;max-width:280px;">AI-powered phishing detection using Random Forest classifiers to keep you safe online.</p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="footer-heading">Navigate</div>
+        <div class="d-flex flex-column gap-2">
+          <a href="{{ url_for('index') }}"     class="footer-link">Home</a>
+          <a href="{{ url_for('about') }}"     class="footer-link">About Us</a>
+          <a href="{{ url_for('contact') }}"   class="footer-link">Contact</a>
+          <a href="{{ url_for('help_page') }}" class="footer-link">Help &amp; FAQ</a>
+        </div>
+      </div>
+      <div class="col-6 col-lg-2">
+        <div class="footer-heading">Tools</div>
+        <div class="d-flex flex-column gap-2">
+          <a href="{{ url_for('check_page') if session.user_id else url_for('login') }}" class="footer-link">URL Scanner</a>
+          <a href="{{ url_for('dashboard')  if session.user_id else url_for('login') }}" class="footer-link">Dashboard</a>
+          {% if session.user_id %}<a href="{{ url_for('account') }}" class="footer-link">My Account</a>{% endif %}
+        </div>
+      </div>
+      <div class="col-lg-4">
+        <div class="footer-heading">Stay Protected</div>
+        <p style="color:var(--text-muted);font-size:.85rem;margin-bottom:1rem;">Always verify URLs before clicking. When in doubt — scan it.</p>
+        <div style="font-family:var(--font-mono);font-size:.72rem;color:var(--border);">Model Accuracy: 95.62% &nbsp;|&nbsp; Features: 30+ &nbsp;|&nbsp; RF Algorithm</div>
+      </div>
+    </div>
+    <div style="border-top:1px solid var(--border);margin-top:2.5rem;padding-top:1.5rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem;">
+      <p style="color:var(--text-muted);font-size:.78rem;">© 2026 PhishGuard AI. Built for cybersecurity education.</p>
+      <p style="font-family:var(--font-mono);font-size:.7rem;color:var(--border);">v2.0.0</p>
+    </div>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+<script>
+(function(){
+  // Particles
+  const pc=document.getElementById('particles');
+  for(let i=0;i<28;i++){const p=document.createElement('div');p.className='particle';p.style.cssText=`left:${Math.random()*100}%;width:${Math.random()*3+1}px;height:${Math.random()*3+1}px;animation-duration:${Math.random()*16+10}s;animation-delay:${Math.random()*16}s;opacity:${Math.random()*.45+.1}`;pc.appendChild(p);}
+
+  // Hamburger
+  const hbg=document.getElementById('hbg');
+  const drawer=document.getElementById('mobileDrawer');
+  hbg&&hbg.addEventListener('click',()=>{hbg.classList.toggle('open');drawer.classList.toggle('open');});
+
+  // Close drawer on link click
+  drawer&&drawer.querySelectorAll('a').forEach(a=>a.addEventListener('click',()=>{hbg.classList.remove('open');drawer.classList.remove('open');}));
+
+  // User dropdown
+  const uw=document.getElementById('umenuWrap');
+  const ub=document.getElementById('umenuBtn');
+  if(uw&&ub){
+    ub.addEventListener('click',e=>{e.stopPropagation();uw.classList.toggle('open');});
+    document.addEventListener('click',()=>uw.classList.remove('open'));
+  }
+
+  // Fetch user email for dropdown (if logged in)
+  const ddEmail=document.getElementById('ddEmailDesktop');
+  if(ddEmail){
+    fetch('/api/me').then(r=>r.json()).then(d=>{if(d.email)ddEmail.textContent=d.email;}).catch(()=>{});
+  }
+})();
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

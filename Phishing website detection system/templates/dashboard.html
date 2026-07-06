@@ -1,0 +1,359 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — PhishGuard AI{% endblock %}
+{% block extra_head %}
+<style>
+.dashboard-page {
+  min-height: calc(100vh - 64px);
+  padding: 2.5rem 1rem;
+  background:
+    radial-gradient(ellipse 60% 40% at 0% 0%, rgba(0,212,255,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 100% 100%, rgba(0,255,159,0.03) 0%, transparent 50%);
+}
+
+/* Welcome banner */
+.welcome-bar {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 1rem;
+  position: relative; overflow: hidden;
+}
+.welcome-bar::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+  background: linear-gradient(to bottom, var(--accent), var(--accent2));
+  border-radius: 3px 0 0 3px;
+}
+.welcome-title {
+  font-family: var(--font-head);
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+.welcome-sub {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+  font-family: var(--font-mono);
+}
+
+/* Stats grid */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+.stat-card-v2 {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  transition: all 0.2s;
+  position: relative; overflow: hidden;
+}
+.stat-card-v2::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+}
+.stat-card-v2.total::before   { background: var(--accent); }
+.stat-card-v2.phish-s::before { background: var(--danger); }
+.stat-card-v2.legit-s::before { background: var(--accent2); }
+.stat-card-v2.model-s::before { background: var(--warn); }
+.stat-card-v2:hover { transform: translateY(-3px); }
+.stat-icon {
+  font-size: 1.5rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+.stat-icon.total   { color: var(--accent); }
+.stat-icon.phish   { color: var(--danger); }
+.stat-icon.legit   { color: var(--accent2); }
+.stat-icon.model-a { color: var(--warn); }
+.stat-num {
+  font-family: var(--font-mono);
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--text-primary);
+}
+.stat-lbl {
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-family: var(--font-head);
+}
+
+/* History section */
+.history-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.history-header {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 0.75rem;
+}
+.history-title {
+  font-family: var(--font-head);
+  font-size: 0.8rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-muted);
+}
+.empty-icon {
+  font-size: 3rem;
+  color: var(--border);
+  margin-bottom: 1rem;
+}
+
+/* Detail modal content */
+.modal-url-text {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  word-break: break-all;
+  padding: 0.5rem;
+  background: rgba(0,0,0,0.3);
+  border-radius: 4px;
+  margin-bottom: 1rem;
+}
+.modal-reason-item {
+  padding: 0.5rem 0.75rem;
+  border-radius: 5px;
+  margin-bottom: 0.4rem;
+  font-size: 0.85rem;
+}
+.modal-reason-item.warn { background: rgba(255,68,102,0.08); border-left: 3px solid var(--danger); color: #ffaabb; }
+.modal-reason-item.safe { background: rgba(0,255,159,0.06); border-left: 3px solid var(--accent2); color: #88ffcc; }
+
+/* Confidence mini bar */
+.mini-conf { width: 60px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+  <div class="container">
+
+    <!-- Welcome -->
+    <div class="welcome-bar">
+      <div>
+        <div class="welcome-title">
+          <i class="fa fa-terminal me-2" style="color:var(--accent)"></i>
+          Welcome back, {{ user.username }}
+        </div>
+        <div class="welcome-sub">
+          Security dashboard &nbsp;|&nbsp; Last active: {{ user.created_at[:10] if user.created_at else 'today' }}
+        </div>
+      </div>
+      <a href="{{ url_for('check_page') }}" class="btn-phish-solid btn">
+        <i class="fa fa-plus me-2"></i>New Analysis
+      </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card-v2 total">
+        <span class="stat-icon total"><i class="fa fa-link"></i></span>
+        <div class="stat-num">{{ stats.total }}</div>
+        <div class="stat-lbl">URLs Checked</div>
+      </div>
+      <div class="stat-card-v2 phish-s">
+        <span class="stat-icon phish"><i class="fa fa-skull-crossbones"></i></span>
+        <div class="stat-num" style="color:var(--danger)">{{ stats.phishing }}</div>
+        <div class="stat-lbl">Phishing Found</div>
+      </div>
+      <div class="stat-card-v2 legit-s">
+        <span class="stat-icon legit"><i class="fa fa-shield-check"></i></span>
+        <div class="stat-num" style="color:var(--accent2)">{{ stats.legit }}</div>
+        <div class="stat-lbl">Legitimate</div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="history-section">
+      <div class="history-header">
+        <div class="history-title">
+          <i class="fa fa-clock-rotate-left me-2"></i>Recent URL Checks
+        </div>
+        {% if checks %}
+        <span style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">
+          {{ checks|length }} record(s)
+        </span>
+        {% endif %}
+      </div>
+
+      {% if not checks %}
+      <div class="empty-state">
+        <div class="empty-icon"><i class="fa fa-magnifying-glass"></i></div>
+        <p style="font-family:var(--font-head);font-size:1rem;color:var(--text-muted);">No URLs checked yet</p>
+        <p style="font-size:0.85rem;color:var(--text-muted);margin-bottom:1.5rem;">Head over to the Analyse page to scan your first URL.</p>
+        <a href="{{ url_for('check_page') }}" class="btn-phish btn">
+          <i class="fa fa-magnifying-glass me-2"></i>Start Analysing
+        </a>
+      </div>
+      {% else %}
+      <div class="table-responsive">
+        <table class="table-phish">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>URL</th>
+              <th>Result</th>
+              <th>Confidence</th>
+              <th>Warnings</th>
+              <th>Checked At</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for c in checks %}
+            <tr onclick="showDetail({{ loop.index0 }})" style="cursor:pointer;">
+              <td style="color:var(--text-muted);font-family:var(--font-mono);font-size:0.8rem;">{{ loop.index }}</td>
+              <td>
+                <div class="url-cell" title="{{ c.url }}">{{ c.url }}</div>
+              </td>
+              <td>
+                {% if c.result == 'phishing' %}
+                <span class="badge-phishing">⚠ PHISHING</span>
+                {% else %}
+                <span class="badge-legit">✅ SAFE</span>
+                {% endif %}
+              </td>
+              <td>
+                <div style="font-family:var(--font-mono);font-size:0.85rem;margin-bottom:3px;color:{% if c.result=='phishing' %}var(--danger){% else %}var(--accent2){% endif %}">
+                  {{ "%.1f"|format(c.confidence * 100) }}%
+                </div>
+                <div class="conf-bar-wrap mini-conf">
+                  <div class="conf-bar-fill" style="width:{{ "%.0f"|format(c.confidence * 100) }}%;background:{% if c.result=='phishing' %}var(--danger){% else %}var(--accent2){% endif %}"></div>
+                </div>
+              </td>
+              <td>
+                <span style="font-family:var(--font-mono);color:var(--danger);font-size:0.85rem;">
+                  {{ c.reasons.phishing_flags|length }}
+                </span>
+                <span style="color:var(--text-muted);font-size:0.8rem;"> warning(s)</span>
+              </td>
+              <td style="font-family:var(--font-mono);font-size:0.75rem;color:var(--text-muted);">
+                {{ c.checked_at[:16].replace('T',' ') if c.checked_at else '' }}
+              </td>
+              <td onclick="event.stopPropagation()">
+                <div class="d-flex gap-1">
+                  <button class="btn-phish btn" style="padding:0.3rem 0.75rem;font-size:0.75rem;"
+                          onclick="showDetail({{ loop.index0 }})">
+                    <i class="fa fa-eye"></i>
+                  </button>
+                  <button class="btn-danger-phish" onclick="deleteCheck({{ c.id }}, this)">
+                    <i class="fa fa-trash"></i>
+                  </button>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal fade modal-phish" id="detailModal" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" style="font-family:var(--font-head);letter-spacing:1px;" id="modalTitle">URL Analysis Detail</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="modalBody"></div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const checks = {{ checks | tojson }};
+
+function showDetail(idx) {
+  const c = checks[idx];
+  const isPhish = c.result === 'phishing';
+  const cls = isPhish ? 'phishing' : 'legitimate';
+  const barColor = isPhish ? 'var(--danger)' : 'var(--accent2)';
+  const warnFlags = c.reasons.phishing_flags || [];
+  const safeFlags = c.reasons.legit_flags || [];
+
+  document.getElementById('modalTitle').innerHTML =
+    isPhish
+      ? '<span style="color:var(--danger)"><i class="fa fa-skull-crossbones me-2"></i>Phishing Detected</span>'
+      : '<span style="color:var(--accent2)"><i class="fa fa-shield-check me-2"></i>Legitimate URL</span>';
+
+  const warnHtml = warnFlags.length
+    ? warnFlags.map(r => `<div class="modal-reason-item warn">${r}</div>`).join('')
+    : '<p style="color:var(--text-muted);font-size:0.85rem;">No warning signals.</p>';
+  const safeHtml = safeFlags.map(r => `<div class="modal-reason-item safe">${r}</div>`).join('');
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="modal-url-text">${escHtml(c.url)}</div>
+
+    <div class="d-flex gap-3 mb-3 flex-wrap">
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">Result</div>
+        ${isPhish ? '<span class="badge-phishing">⚠ PHISHING</span>' : '<span class="badge-legit">✅ LEGITIMATE</span>'}
+      </div>
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">Confidence</div>
+        <div style="font-family:var(--font-mono);color:${barColor}">${(c.confidence*100).toFixed(1)}%</div>
+      </div>
+      <div>
+        <div style="font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">Checked At</div>
+        <div style="font-family:var(--font-mono);font-size:0.85rem;color:var(--text-muted);">${(c.checked_at||'').slice(0,16).replace('T',' ')}</div>
+      </div>
+    </div>
+
+    <div style="margin-bottom:0.5rem;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">⚠️ Warning Signals (${warnFlags.length})</div>
+    ${warnHtml}
+
+    ${safeFlags.length ? `<div style="margin:0.75rem 0 0.5rem;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">✅ Trust Indicators (${safeFlags.length})</div>${safeHtml}` : ''}
+
+    <div style="margin-top:1rem;padding:0.75rem;background:rgba(0,212,255,0.05);border:1px solid var(--border);border-radius:6px;font-size:0.85rem;color:var(--text-muted);">
+      <i class="fa fa-circle-info me-2" style="color:var(--accent)"></i>
+      ${escHtml(c.reasons.summary || '')}
+    </div>
+  `;
+
+  new bootstrap.Modal(document.getElementById('detailModal')).show();
+}
+
+async function deleteCheck(id, btn) {
+  if (!confirm('Remove this record?')) return;
+  try {
+    const res = await fetch(`/api/delete/${id}`, {method:'DELETE'});
+    const data = await res.json();
+    if (data.ok) location.reload();
+  } catch(e) { alert('Failed to delete.'); }
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+{% endblock %}

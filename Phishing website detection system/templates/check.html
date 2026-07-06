@@ -1,0 +1,401 @@
+{% extends "base.html" %}
+{% block title %}Analyse URL — PhishGuard AI{% endblock %}
+{% block extra_head %}
+<style>
+.check-page {
+  min-height: calc(100vh - 64px);
+  padding: 3rem 1rem;
+  background:
+    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(0,212,255,0.06) 0%, transparent 60%);
+}
+
+/* URL input area */
+.url-input-wrap {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 2.5rem;
+  position: relative;
+  overflow: hidden;
+  max-width: 800px;
+  margin: 0 auto 2rem;
+}
+.url-input-wrap::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+}
+
+.big-input-wrap {
+  display: flex; gap: 1rem;
+  align-items: stretch;
+}
+.big-input {
+  flex: 1;
+  background: rgba(0,0,0,0.5) !important;
+  border: 2px solid var(--border) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 1rem !important;
+  border-radius: 8px !important;
+  padding: 1rem 1.25rem !important;
+  transition: all 0.3s !important;
+}
+.big-input:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px rgba(0,212,255,0.1) !important;
+  outline: none !important;
+}
+.big-input::placeholder { color: var(--text-muted) !important; font-size: 0.9rem !important; }
+
+.analyse-btn {
+  background: var(--accent);
+  border: none;
+  color: var(--bg-dark);
+  font-family: var(--font-head);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+.analyse-btn:hover:not(:disabled) {
+  box-shadow: 0 0 30px rgba(0,212,255,0.4);
+  transform: translateY(-1px);
+}
+.analyse-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Loading state */
+.loading-overlay {
+  display: none;
+  text-align: center;
+  padding: 2rem;
+}
+.loading-text {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-size: 0.9rem;
+  letter-spacing: 2px;
+  animation: blink 1s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Result area */
+.result-area { max-width: 800px; margin: 0 auto; }
+.result-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  animation: slideIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+  margin-bottom: 1.5rem;
+}
+@keyframes slideIn {
+  from { opacity:0; transform:translateY(20px) scale(0.98); }
+  to   { opacity:1; transform:none; }
+}
+
+.result-header {
+  padding: 1.5rem 2rem;
+  display: flex; align-items: center; gap: 1.5rem;
+}
+.result-header.phishing {
+  background: linear-gradient(135deg, rgba(255,68,102,0.15), rgba(255,68,102,0.05));
+  border-bottom: 1px solid rgba(255,68,102,0.2);
+}
+.result-header.legitimate {
+  background: linear-gradient(135deg, rgba(0,255,159,0.1), rgba(0,255,159,0.03));
+  border-bottom: 1px solid rgba(0,255,159,0.2);
+}
+.result-icon {
+  font-size: 3rem;
+  flex-shrink: 0;
+}
+.result-icon.phishing { color: var(--danger); text-shadow: 0 0 20px rgba(255,68,102,0.5); }
+.result-icon.legitimate { color: var(--accent2); text-shadow: 0 0 20px rgba(0,255,159,0.5); }
+.result-verdict {
+  font-family: var(--font-head);
+  font-size: 1.75rem;
+  font-weight: 800;
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+.result-verdict.phishing { color: var(--danger); }
+.result-verdict.legitimate { color: var(--accent2); }
+.result-url {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  word-break: break-all;
+}
+.confidence-section {
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.conf-label {
+  font-family: var(--font-head);
+  font-size: 0.7rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+}
+.conf-value {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Features grid */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  padding: 1.5rem 2rem;
+  border-bottom: 1px solid var(--border);
+}
+.feat-item {
+  background: rgba(0,0,0,0.3);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 0.75rem;
+}
+.feat-item.flagged { border-color: rgba(255,68,102,0.35); background: rgba(255,68,102,0.06); }
+.feat-name {
+  font-size: 0.7rem;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.25rem;
+}
+.feat-value {
+  font-family: var(--font-mono);
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+.feat-item.flagged .feat-value { color: var(--danger); }
+
+/* Reasons */
+.reasons-section { padding: 1.5rem 2rem; }
+.reasons-title {
+  font-family: var(--font-head);
+  font-size: 0.7rem;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+}
+.reason-item {
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.reason-item.warning {
+  background: rgba(255,68,102,0.08);
+  border-left: 3px solid var(--danger);
+  color: #ffaabb;
+}
+.reason-item.safe {
+  background: rgba(0,255,159,0.06);
+  border-left: 3px solid var(--accent2);
+  color: #88ffcc;
+}
+
+/* Examples */
+.examples-row {
+  max-width: 800px;
+  margin: 0 auto;
+}
+.example-url {
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: rgba(0,0,0,0.3);
+  color: var(--text-muted);
+  transition: all 0.2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+  display: inline-block;
+}
+.example-url:hover { border-color: var(--accent); color: var(--accent); }
+.example-url.phish-ex:hover { border-color: var(--danger); color: var(--danger); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="check-page">
+  <div class="container">
+    <!-- Header -->
+    <div class="text-center mb-4">
+      <p class="section-heading"><i class="fa fa-crosshairs me-2"></i>URL Analysis Engine</p>
+      <h2 style="font-family:var(--font-head);font-size:2rem;font-weight:800;">Check Any URL Instantly</h2>
+      <p style="color:var(--text-muted);font-size:0.95rem;">Paste a URL below and our Random Forest model will analyse 30+ features in under a second.</p>
+    </div>
+
+    <!-- Input -->
+    <div class="url-input-wrap">
+      <div class="scan-line" id="scanLine" style="display:none;"></div>
+      <div class="big-input-wrap">
+        <input type="url" id="urlInput" class="big-input form-control"
+               placeholder="https://example.com or paste any suspicious URL..."
+               autocomplete="off" spellcheck="false"
+               onkeydown="if(event.key === 'Enter') analyseURL()">
+               
+        <button class="analyse-btn" id="analyseBtn" onclick="analyseURL()">
+          <i class="fa fa-radar me-2"></i>Scan
+        </button>
+      </div>
+      <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-text">
+          <i class="fa fa-circle-notch fa-spin me-2"></i>
+          ANALYSING URL — EXTRACTING FEATURES...
+        </div>
+      </div>
+    </div>
+
+    <!-- Example URLs -->
+    <div class="examples-row mb-4">
+      <p class="section-heading text-center mb-2">Try an example</p>
+      <div class="d-flex flex-wrap gap-2 justify-content-center">
+        <span class="example-url" onclick="fillUrl('https://www.google.com')">google.com</span>
+        <span class="example-url" onclick="fillUrl('https://www.amazon.com/products')">amazon.com</span>
+        <span class="example-url" onclick="fillUrl('https://github.com/user/repo')">github.com</span>
+        <span class="example-url phish-ex" onclick="fillUrl('http://paypa1-secure-login.tk/verify?user=admin&token=abc123')">paypa1 phish</span>
+        <span class="example-url phish-ex" onclick="fillUrl('http://192.168.1.1/amazon/login.php?redirect=secure')">IP phish</span>
+        <span class="example-url phish-ex" onclick="fillUrl('http://apple-id-suspended-verify.ga/signin?token=xyz')">apple phish</span>
+      </div>
+    </div>
+
+    <!-- Result area -->
+    <div class="result-area" id="resultArea"></div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const urlInput = document.getElementById('urlInput');
+const resultArea = document.getElementById('resultArea');
+const analyseBtn = document.getElementById('analyseBtn');
+const loadingOverlay = document.getElementById('loadingOverlay');
+const scanLine = document.getElementById('scanLine');
+
+urlInput.addEventListener('keydown', e => { if(e.key==='Enter') analyseURL(); });
+
+function fillUrl(u) { urlInput.value = u; urlInput.focus(); }
+
+async function analyseURL() {
+  const url = urlInput.value.trim();
+  if (!url) { urlInput.style.borderColor = 'var(--danger)'; return; }
+  urlInput.style.borderColor = '';
+
+  analyseBtn.disabled = true;
+  loadingOverlay.style.display = 'block';
+  scanLine.style.display = 'block';
+  resultArea.innerHTML = '';
+
+  try {
+    const res = await fetch('/api/analyse', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({url})
+    });
+    const data = await res.json();
+    if (data.error) throw new Error(data.error);
+    renderResult(data);
+  } catch(e) {
+    resultArea.innerHTML = `<div class="alert-phish text-center"><i class="fa fa-triangle-exclamation me-2"></i>${e.message}</div>`;
+  } finally {
+    analyseBtn.disabled = false;
+    loadingOverlay.style.display = 'none';
+    scanLine.style.display = 'none';
+  }
+}
+
+function renderResult(d) {
+  const isPhish = d.result === 'phishing';
+  const cls = isPhish ? 'phishing' : 'legitimate';
+  const icon = isPhish ? 'fa-skull-crossbones' : 'fa-shield-check';
+  const verdict = isPhish ? '⚠️ PHISHING DETECTED' : '✅ LEGITIMATE URL';
+  const barColor = isPhish ? 'var(--danger)' : 'var(--accent2)';
+
+  const warnFlags = d.reasons.phishing_flags || [];
+  const safeFlags = d.reasons.legit_flags || [];
+
+  const featHtml = d.features.map(f => `
+    <div class="feat-item ${f.flag ? 'flagged' : ''}">
+      <div class="feat-name">${f.name}</div>
+      <div class="feat-value">${f.value}</div>
+    </div>
+  `).join('');
+
+  const warnHtml = warnFlags.length
+    ? warnFlags.map(r => `<div class="reason-item warning">${r}</div>`).join('')
+    : '<div style="color:var(--text-muted);font-size:0.85rem;">No warning signals detected.</div>';
+
+  const safeHtml = safeFlags.map(r => `<div class="reason-item safe">${r}</div>`).join('');
+
+  resultArea.innerHTML = `
+    <div class="result-card">
+      <div class="result-header ${cls}">
+        <div class="result-icon ${cls}"><i class="fa ${icon}"></i></div>
+        <div>
+          <div class="result-verdict ${cls}">${verdict}</div>
+          <div class="result-url">${escHtml(d.url)}</div>
+        </div>
+      </div>
+
+      <div class="confidence-section">
+        <div class="conf-label">Model Confidence</div>
+        <div class="conf-value" style="color:${barColor}">${d.confidence}%</div>
+        <div class="conf-bar-wrap">
+          <div class="conf-bar-fill" id="confBar" style="width:0;background:${barColor}"></div>
+        </div>
+        <div style="margin-top:0.5rem;font-size:0.75rem;color:var(--text-muted);font-family:var(--font-mono);">
+          Model accuracy: ${d.model_accuracy} &nbsp;|&nbsp; Features analysed: 30
+        </div>
+      </div>
+
+      <div>
+        <div style="padding:1rem 2rem 0.5rem;font-family:var(--font-head);font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);">
+          Feature Breakdown
+        </div>
+        <div class="features-grid">${featHtml}</div>
+      </div>
+
+      <div class="reasons-section">
+        <div class="reasons-title">⚠️ Warning Signals (${warnFlags.length})</div>
+        ${warnHtml}
+        ${safeFlags.length ? `<div class="reasons-title mt-3">✅ Trust Indicators (${safeFlags.length})</div>${safeHtml}` : ''}
+        <div style="margin-top:1rem;padding:0.75rem;background:rgba(0,212,255,0.05);border:1px solid var(--border);border-radius:6px;font-size:0.85rem;color:var(--text-muted);">
+          <i class="fa fa-circle-info me-2" style="color:var(--accent)"></i>
+          ${escHtml(d.reasons.summary)}
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Animate confidence bar
+  setTimeout(() => {
+    document.getElementById('confBar').style.width = d.confidence + '%';
+  }, 50);
+
+  resultArea.scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+{% endblock %}

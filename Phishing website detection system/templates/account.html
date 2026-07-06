@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+{% block title %}My Account — PhishGuard AI{% endblock %}
+{% block extra_head %}
+<style>
+.account-page{padding:3rem 0 5rem;min-height:calc(100vh - var(--navbar-h));}
+/* Profile hero */
+.profile-hero{background:var(--bg-card);border:1px solid var(--border);border-radius:16px;padding:2rem;margin-bottom:2rem;position:relative;overflow:hidden;}
+.profile-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2),var(--accent));}
+.avatar-lg{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-family:var(--font-head);font-weight:800;font-size:2rem;color:var(--bg-dark);flex-shrink:0;box-shadow:0 0 30px rgba(0,212,255,0.3);}
+.profile-name{font-family:var(--font-head);font-size:1.6rem;font-weight:800;margin-bottom:.2rem;}
+.profile-email{font-family:var(--font-mono);font-size:.82rem;color:var(--text-muted);}
+.profile-joined{font-family:var(--font-mono);font-size:.75rem;color:var(--text-muted);margin-top:.3rem;}
+.profile-badge{display:inline-flex;align-items:center;gap:.4rem;background:rgba(0,255,159,0.1);border:1px solid var(--accent2);color:var(--accent2);border-radius:20px;padding:.25rem .8rem;font-size:.75rem;font-family:var(--font-mono);margin-top:.5rem;}
+/* Tab nav */
+.tab-nav{display:flex;gap:.25rem;margin-bottom:2rem;border-bottom:1px solid var(--border);padding-bottom:0;flex-wrap:wrap;}
+.tab-btn{font-family:var(--font-head);font-size:.82rem;letter-spacing:1px;text-transform:uppercase;font-weight:600;color:var(--text-muted);background:none;border:none;border-bottom:2px solid transparent;padding:.6rem 1rem;cursor:pointer;transition:all .2s;margin-bottom:-1px;display:flex;align-items:center;gap:.4rem;}
+.tab-btn:hover{color:var(--accent);}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-pane{display:none;animation:tabIn .25s ease;}
+.tab-pane.active{display:block;}
+@keyframes tabIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* Info rows */
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:1rem 0;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:.5rem;}
+.info-row:last-child{border-bottom:none;}
+.info-label{font-family:var(--font-head);font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);}
+.info-value{font-family:var(--font-mono);font-size:.88rem;color:var(--text-primary);}
+/* Danger zone */
+.danger-zone{background:rgba(255,68,102,0.05);border:1px solid rgba(255,68,102,0.2);border-radius:10px;padding:1.5rem;}
+.section-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.75rem;}
+/* Activity mini list */
+.activity-item{display:flex;align-items:center;gap:.75rem;padding:.7rem 0;border-bottom:1px solid var(--border);}
+.activity-item:last-child{border-bottom:none;}
+.activity-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="account-page">
+  <div class="container" style="max-width:900px;">
+
+    <!-- Profile header -->
+    <div class="profile-hero">
+      <div class="d-flex align-items-center gap-4 flex-wrap">
+        <div class="avatar-lg">{{ user.username[0]|upper }}</div>
+        <div>
+          <div class="profile-name">{{ user.username }}</div>
+          <div class="profile-email">{{ user.email }}</div>
+          <div class="profile-joined"><i class="fa fa-calendar me-1"></i> Member since {{ user.created_at[:10] if user.created_at else 'N/A' }}</div>
+          <div class="profile-badge"><i class="fa fa-circle-check"></i> Verified Account</div>
+        </div>
+        <div class="ms-auto d-flex gap-2 flex-wrap">
+          <span style="font-family:var(--font-mono);font-size:.75rem;background:rgba(0,212,255,0.08);border:1px solid var(--border);border-radius:6px;padding:.35rem .75rem;color:var(--accent);">
+            <i class="fa fa-magnifying-glass me-1"></i>{{ stats.total }} URLs Scanned
+          </span>
+          <span style="font-family:var(--font-mono);font-size:.75rem;background:rgba(255,68,102,0.08);border:1px solid rgba(255,68,102,0.2);border-radius:6px;padding:.35rem .75rem;color:var(--danger);">
+            <i class="fa fa-skull-crossbones me-1"></i>{{ stats.phishing }} Phishing Found
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tab-nav">
+      <button class="tab-btn active" onclick="switchTab(this,'profile')"><i class="fa fa-user"></i> Profile</button>
+      <button class="tab-btn" onclick="switchTab(this,'security')"><i class="fa fa-lock"></i> Security</button>
+      <button class="tab-btn" onclick="switchTab(this,'activity')"><i class="fa fa-clock-rotate-left"></i> Recent Activity</button>
+      <button class="tab-btn" onclick="switchTab(this,'danger')"><i class="fa fa-triangle-exclamation" style="color:var(--danger)"></i> Danger Zone</button>
+    </div>
+
+    <!-- Profile tab -->
+    <div class="tab-pane active" id="tab-profile">
+      <div class="row g-4">
+        <div class="col-md-7">
+          <div class="section-card">
+            <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:1.25rem;"><i class="fa fa-id-card me-2" style="color:var(--accent)"></i>Account Information</h5>
+            {% if profile_saved %}
+            <div class="alert-success-phish mb-3"><i class="fa fa-circle-check me-2"></i>Profile updated successfully.</div>
+            {% endif %}
+            {% if profile_error %}
+            <div class="alert-phish mb-3"><i class="fa fa-triangle-exclamation me-2"></i>{{ profile_error }}</div>
+            {% endif %}
+            <form method="POST" action="{{ url_for('account_update') }}">
+              <div class="form-group-phish mb-3">
+                <label style="font-family:var(--font-head);font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:.4rem;">Username</label>
+                <input type="text" name="username" value="{{ user.username }}" class="input-phish" minlength="3" required>
+              </div>
+              <div class="form-group-phish mb-4">
+                <label style="font-family:var(--font-head);font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:.4rem;">Email Address</label>
+                <input type="email" name="email" value="{{ user.email }}" class="input-phish" required>
+              </div>
+              <button type="submit" class="btn-phish-solid btn"><i class="fa fa-floppy-disk me-2"></i>Save Changes</button>
+            </form>
+          </div>
+        </div>
+        <div class="col-md-5">
+          <div class="section-card h-100">
+            <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:1.25rem;"><i class="fa fa-chart-pie me-2" style="color:var(--accent2)"></i>Your Stats</h5>
+            <div class="info-row">
+              <span class="info-label">Total Scans</span>
+              <span class="info-value" style="color:var(--accent)">{{ stats.total }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Phishing Found</span>
+              <span class="info-value" style="color:var(--danger)">{{ stats.phishing }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Safe URLs</span>
+              <span class="info-value" style="color:var(--accent2)">{{ stats.legit }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Detection Rate</span>
+              <span class="info-value" style="color:var(--warn)">
+                {% if stats.total > 0 %}{{ "%.0f"|format(stats.phishing / stats.total * 100) }}%{% else %}N/A{% endif %}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Account Status</span>
+              <span class="badge-legit">Active</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Member Since</span>
+              <span class="info-value">{{ user.created_at[:10] if user.created_at else '—' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Security tab -->
+    <div class="tab-pane" id="tab-security">
+      <div class="section-card" style="max-width:520px;">
+        <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:1.25rem;"><i class="fa fa-key me-2" style="color:var(--accent)"></i>Change Password</h5>
+        {% if pw_saved %}
+        <div class="alert-success-phish mb-3"><i class="fa fa-circle-check me-2"></i>Password changed successfully.</div>
+        {% endif %}
+        {% if pw_error %}
+        <div class="alert-phish mb-3"><i class="fa fa-triangle-exclamation me-2"></i>{{ pw_error }}</div>
+        {% endif %}
+        <form method="POST" action="{{ url_for('account_password') }}">
+          <div class="mb-3">
+            <label style="font-family:var(--font-head);font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:.4rem;">Current Password</label>
+            <input type="password" name="current" class="input-phish" placeholder="••••••••" required>
+          </div>
+          <div class="mb-3">
+            <label style="font-family:var(--font-head);font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:.4rem;">New Password</label>
+            <input type="password" name="new_pw" class="input-phish" placeholder="••••••••" minlength="6" required>
+          </div>
+          <div class="mb-4">
+            <label style="font-family:var(--font-head);font-size:.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);display:block;margin-bottom:.4rem;">Confirm New Password</label>
+            <input type="password" name="confirm" class="input-phish" placeholder="••••••••" required>
+          </div>
+          <button type="submit" class="btn-phish btn"><i class="fa fa-lock me-2"></i>Update Password</button>
+        </form>
+
+        <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border);">
+          <h6 style="font-family:var(--font-head);font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:.75rem;">Security Info</h6>
+          <div class="info-row">
+            <span class="info-label">Password Hashing</span>
+            <span class="info-value" style="font-size:.8rem;">SHA-256</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Session Type</span>
+            <span class="info-value" style="font-size:.8rem;">Server-side</span>
+          </div>
+          <div class="info-row" style="border-bottom:none;">
+            <span class="info-label">Login Method</span>
+            <span class="info-value" style="font-size:.8rem;">{{ user.auth_provider|default('Email') }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity tab -->
+    <div class="tab-pane" id="tab-activity">
+      <div class="section-card">
+        <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:1.25rem;"><i class="fa fa-clock-rotate-left me-2" style="color:var(--accent)"></i>Recent URL Scans</h5>
+        {% if recent_checks %}
+          {% for c in recent_checks %}
+          <div class="activity-item">
+            <div class="activity-dot" style="background:{% if c.result=='phishing' %}var(--danger){% else %}var(--accent2){% endif %};box-shadow:0 0 6px {% if c.result=='phishing' %}var(--danger){% else %}var(--accent2){% endif %};"></div>
+            <div style="flex:1;min-width:0;">
+              <div class="url-cell" style="max-width:100%;color:var(--text-primary);" title="{{ c.url }}">{{ c.url }}</div>
+              <div style="font-size:.72rem;color:var(--text-muted);margin-top:2px;font-family:var(--font-mono);">{{ c.checked_at[:16].replace('T',' ') if c.checked_at else '' }}</div>
+            </div>
+            <div>
+              {% if c.result=='phishing' %}
+              <span class="badge-phishing" style="font-size:.72rem;">⚠ PHISHING</span>
+              {% else %}
+              <span class="badge-legit" style="font-size:.72rem;">✅ SAFE</span>
+              {% endif %}
+            </div>
+          </div>
+          {% endfor %}
+          <div class="text-center mt-3">
+            <a href="{{ url_for('dashboard') }}" class="btn-phish btn" style="font-size:.82rem;padding:.45rem 1.2rem;"><i class="fa fa-arrow-right me-1"></i>View All in Dashboard</a>
+          </div>
+        {% else %}
+          <div style="text-align:center;padding:2rem;color:var(--text-muted);">
+            <i class="fa fa-magnifying-glass" style="font-size:2rem;margin-bottom:.75rem;display:block;"></i>
+            No scans yet. <a href="{{ url_for('check_page') }}" style="color:var(--accent);">Analyse your first URL</a>.
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Danger zone tab -->
+    <div class="tab-pane" id="tab-danger">
+      <div class="danger-zone">
+        <h5 style="font-family:var(--font-head);font-weight:700;color:var(--danger);margin-bottom:.5rem;"><i class="fa fa-triangle-exclamation me-2"></i>Danger Zone</h5>
+        <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:1.5rem;">These actions are irreversible. Please proceed with caution.</p>
+        <div style="border-top:1px solid rgba(255,68,102,0.2);padding-top:1.25rem;">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-1">
+            <div>
+              <div style="font-family:var(--font-head);font-weight:600;margin-bottom:.2rem;">Clear Scan History</div>
+              <div style="color:var(--text-muted);font-size:.82rem;">Remove all URL scan records from your account.</div>
+            </div>
+            <button class="btn-danger-phish" onclick="confirmAction('clear')"><i class="fa fa-trash me-1"></i>Clear History</button>
+          </div>
+        </div>
+        <div style="border-top:1px solid rgba(255,68,102,0.2);padding-top:1.25rem;margin-top:1rem;">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-1">
+            <div>
+              <div style="font-family:var(--font-head);font-weight:600;margin-bottom:.2rem;">Delete Account</div>
+              <div style="color:var(--text-muted);font-size:.82rem;">Permanently delete your account and all data. Cannot be undone.</div>
+            </div>
+            <button class="btn-danger-phish" onclick="confirmAction('delete')"><i class="fa fa-user-xmark me-1"></i>Delete Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function switchTab(btn, id){
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-pane').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+id).classList.add('active');
+}
+
+// Auto-switch to correct tab on page load if there's a success/error param
+const urlp = new URLSearchParams(location.search);
+if(urlp.get('tab')){
+  const t=urlp.get('tab');
+  const btn=document.querySelector(`.tab-btn[onclick*="${t}"]`);
+  if(btn){const id=t;switchTab(btn,id);}
+}
+
+function confirmAction(type){
+  if(type==='clear'){
+    if(confirm('Delete all your scan history? This cannot be undone.')){
+      fetch('/api/clear-history', {method:'POST'}).then(r=>r.json()).then(d=>{if(d.ok)location.reload();});
+    }
+  } else {
+    if(confirm('PERMANENTLY delete your account and all data?\n\nThis cannot be undone.')){
+      fetch('/api/delete-account', {method:'POST'}).then(r=>r.json()).then(d=>{if(d.ok)location.href='/';});
+    }
+  }
+}
+</script>
+{% endblock %}
+

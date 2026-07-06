@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Contact — PhishGuard AI{% endblock %}
+{% block extra_head %}
+<style>
+.page-hero{padding:5rem 0 3rem;text-align:center;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(0,255,159,0.06) 0%,transparent 65%);}
+.page-hero h1{font-family:var(--font-head);font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;margin-bottom:.75rem;}
+.contact-card{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;padding:2rem;height:100%;transition:all .3s;position:relative;overflow:hidden;}
+.contact-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent2),transparent);opacity:.7;}
+.contact-card:hover{border-color:var(--accent);transform:translateY(-4px);box-shadow:var(--glow);}
+.contact-icon{width:56px;height:56px;border-radius:12px;background:rgba(0,212,255,0.1);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--accent);margin-bottom:1rem;}
+.form-label-phish{font-family:var(--font-head);font-size:.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--text-muted);margin-bottom:.4rem;display:block;}
+.form-group-phish{margin-bottom:1.2rem;}
+.textarea-phish{background:rgba(0,0,0,0.4)!important;border:1px solid var(--border)!important;color:var(--text-primary)!important;font-family:var(--font-mono)!important;border-radius:5px!important;padding:.75rem 1rem!important;transition:all .3s;width:100%;resize:vertical;min-height:130px;}
+.textarea-phish:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(0,212,255,0.12)!important;outline:none!important;}
+.textarea-phish::placeholder{color:var(--text-muted)!important;}
+.map-placeholder{background:var(--bg-card);border:1px solid var(--border);border-radius:14px;height:220px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:.75rem;color:var(--text-muted);}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <p class="section-heading"><i class="fa fa-envelope me-2"></i>Get In Touch</p>
+    <h1>Contact <span style="color:var(--accent2)">Us</span></h1>
+    <p style="color:var(--text-muted);font-size:1rem;max-width:500px;margin:0 auto;">Have a question, found a bug, or want to report a phishing site? We'd love to hear from you.</p>
+  </div>
+</div>
+
+<div class="container pb-5">
+  <div class="row g-5">
+    <!-- Contact info cards -->
+    <div class="col-lg-4">
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="contact-card">
+            <div class="contact-icon"><i class="fa fa-envelope"></i></div>
+            <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:.35rem;">Email Us</h5>
+            <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:.5rem;">For general inquiries and support</p>
+            <a href="mailto:support@phishguard.ai" style="font-family:var(--font-mono);font-size:.85rem;color:var(--accent);text-decoration:none;">misbahmarcha@gmail.com OR delawalafahima@gmail.com</a>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="contact-card">
+            <div class="contact-icon" style="background:rgba(0,255,159,0.1);color:var(--accent2);"><i class="fa fa-bug"></i></div>
+            <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:.35rem;">Report a Bug</h5>
+            <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:.5rem;">Found an issue? Let us know.</p>
+            <a href="mailto:bugs@phishguard.ai" style="font-family:var(--font-mono);font-size:.85rem;color:var(--accent2);text-decoration:none;">misbahmarcha@gmail.com OR delawalafahima@gmail.com</a>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="contact-card">
+            <div class="contact-icon" style="background:rgba(255,170,0,0.1);color:var(--warn);"><i class="fa fa-shield-exclamation"></i></div>
+            <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:.35rem;">Report Phishing</h5>
+            <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:.5rem;">Spotted a phishing site in the wild?</p>
+            <a href="mailto:report@phishguard.ai" style="font-family:var(--font-mono);font-size:.85rem;color:var(--warn);text-decoration:none;">misbahmarcha@gmail.com OR delawalafahima@gmail.com</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact form -->
+    <div class="col-lg-8">
+      <div class="card-phish p-4">
+        <h3 style="font-family:var(--font-head);font-weight:800;font-size:1.5rem;margin-bottom:.5rem;">Send Us a Message</h3>
+        <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:2rem;">We typically respond within 24 hours.</p>
+
+        {% if sent %}
+        <div class="alert-success-phish mb-4">
+          <i class="fa fa-circle-check me-2"></i>Your message has been sent! We'll get back to you shortly.
+        </div>
+        {% endif %}
+        {% if error %}
+        <div class="alert-phish mb-4"><i class="fa fa-triangle-exclamation me-2"></i>{{ error }}</div>
+        {% endif %}
+
+        <form method="POST">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="form-group-phish">
+                <label class="form-label-phish">Your Name</label>
+                <input type="text" name="name" class="input-phish" placeholder="Your Name" required value="{{ form.name if form }}">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group-phish">
+                <label class="form-label-phish">Email Address</label>
+                <input type="email" name="email" class="input-phish" placeholder="you@example.com" required value="{{ form.email if form }}">
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="form-group-phish">
+                <label class="form-label-phish">Subject</label>
+                <select name="subject" class="input-phish" style="cursor:pointer;">
+                  <option value="general">General Inquiry</option>
+                  <option value="support">Technical Support</option>
+                  <option value="bug">Bug Report</option>
+                  <option value="phishing">Report Phishing URL</option>
+                  <option value="feedback">Feedback</option>
+                </select>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="form-group-phish">
+                <label class="form-label-phish">Message</label>
+                <textarea name="message" class="textarea-phish" placeholder="Tell us how we can help you…" required>{{ form.message if form }}</textarea>
+              </div>
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn-phish-solid btn w-100">
+                <i class="fa fa-paper-plane me-2"></i>Send Message
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bottom social links -->
+  <div class="text-center mt-5">
+    <p class="section-heading mb-3">Also Find Us On</p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      
+      <a href="#" style="color:var(--text-muted);font-size:1.5rem;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'"><i class="fab fa-twitter"></i></a>
+      <a href="#" style="color:var(--text-muted);font-size:1.5rem;transition:color .2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text-muted)'"><i class="fab fa-linkedin"></i></a>
+    </div>
+  </div>
+</div>
+{% endblock %}

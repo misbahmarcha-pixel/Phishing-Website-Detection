@@ -1,0 +1,275 @@
+{% extends "base.html" %}
+{% block title %}Help & FAQ — PhishGuard AI{% endblock %}
+{% block extra_head %}
+<style>
+.page-hero{padding:5rem 0 3rem;text-align:center;background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(255,170,0,0.05) 0%,transparent 65%);}
+.page-hero h1{font-family:var(--font-head);font-size:clamp(2.2rem,5vw,3.5rem);font-weight:800;margin-bottom:.75rem;}
+/* Search bar */
+.help-search-wrap{max-width:540px;margin:1.5rem auto 0;position:relative;}
+.help-search{background:rgba(0,0,0,0.4)!important;border:1px solid var(--border)!important;color:var(--text-primary)!important;font-family:var(--font-mono)!important;border-radius:8px!important;padding:.85rem 1rem .85rem 2.8rem!important;font-size:.95rem;width:100%;transition:all .3s;}
+.help-search:focus{border-color:var(--accent)!important;box-shadow:0 0 0 2px rgba(0,212,255,0.12)!important;outline:none!important;}
+.help-search::placeholder{color:var(--text-muted)!important;}
+.search-icon{position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:.9rem;}
+/* Category pills */
+.cat-pill{background:rgba(0,0,0,0.3);border:1px solid var(--border);color:var(--text-muted);border-radius:30px;padding:.35rem 1rem;font-size:.8rem;font-family:var(--font-head);font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;user-select:none;}
+.cat-pill:hover,.cat-pill.active{background:rgba(0,212,255,0.1);border-color:var(--accent);color:var(--accent);}
+/* Accordion */
+.faq-section{margin-bottom:3rem;}
+.faq-category{font-family:var(--font-head);font-size:.72rem;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:1rem;padding-bottom:.5rem;border-bottom:1px solid var(--border);}
+.faq-item{background:var(--bg-card);border:1px solid var(--border);border-radius:10px;margin-bottom:.6rem;overflow:hidden;transition:border-color .2s;}
+.faq-item.open{border-color:rgba(0,212,255,0.3);}
+.faq-q{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem;cursor:pointer;font-family:var(--font-head);font-weight:600;font-size:.95rem;color:var(--text-primary);user-select:none;gap:1rem;}
+.faq-q:hover{color:var(--accent);}
+.faq-q .faq-icon{color:var(--text-muted);transition:transform .25s;flex-shrink:0;font-size:.8rem;}
+.faq-item.open .faq-icon{transform:rotate(180deg);color:var(--accent);}
+.faq-a{display:none;padding:0 1.25rem 1rem;color:var(--text-muted);font-size:.9rem;line-height:1.8;}
+.faq-item.open .faq-a{display:block;}
+.faq-a code{background:rgba(0,212,255,0.1);color:var(--accent);padding:1px 6px;border-radius:3px;font-family:var(--font-mono);font-size:.85rem;}
+/* Quick guide cards */
+.guide-card{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:1.5rem;transition:all .3s;}
+.guide-card:hover{border-color:var(--accent);box-shadow:var(--glow);}
+.guide-step{font-family:var(--font-mono);font-size:.8rem;color:var(--accent);margin-bottom:.5rem;letter-spacing:1px;}
+/* Hidden FAQ */
+.faq-item.hidden{display:none;}
+</style>
+{% endblock %}
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <p class="section-heading"><i class="fa fa-circle-question me-2"></i>Help Center</p>
+    <h1>How Can We <span style="color:var(--warn)">Help?</span></h1>
+    <p style="color:var(--text-muted);max-width:500px;margin:0 auto;font-size:1rem;">Find answers to common questions, guides, and tips for staying protected online.</p>
+    <div class="help-search-wrap">
+      <i class="fa fa-magnifying-glass search-icon"></i>
+      <input type="text" class="help-search" id="faqSearch" placeholder="Search questions… e.g. 'phishing', 'account'">
+    </div>
+  </div>
+</div>
+
+<div class="container pb-5">
+
+  <!-- Category filter -->
+  <div class="d-flex gap-2 flex-wrap justify-content-center mb-5">
+    <span class="cat-pill active" data-cat="all">All</span>
+    <span class="cat-pill" data-cat="getting-started">Getting Started</span>
+    <span class="cat-pill" data-cat="scanner">URL Scanner</span>
+    <span class="cat-pill" data-cat="account">Account</span>
+    <span class="cat-pill" data-cat="security">Security</span>
+    <span class="cat-pill" data-cat="model">AI Model</span>
+  </div>
+
+  <!-- Quick Start Guide -->
+  <div class="mb-5">
+    <p class="section-heading text-center mb-3"><i class="fa fa-rocket me-2"></i>Quick Start Guide</p>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <div class="guide-card">
+          <div class="guide-step">STEP 01</div>
+          <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:.5rem;"><i class="fa fa-user-plus me-2" style="color:var(--accent)"></i>Create Account</h5>
+          <p style="color:var(--text-muted);font-size:.875rem;line-height:1.6;">Sign up with your email or continue with Google. It's free — no credit card needed.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="guide-card">
+          <div class="guide-step">STEP 02</div>
+          <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:.5rem;"><i class="fa fa-magnifying-glass me-2" style="color:var(--accent2)"></i>Paste a URL</h5>
+          <p style="color:var(--text-muted);font-size:.875rem;line-height:1.6;">Go to the Analyse page and paste any URL — email link, website, social post — anything you're suspicious of.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="guide-card">
+          <div class="guide-step">STEP 03</div>
+          <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:.5rem;"><i class="fa fa-shield-halved me-2" style="color:var(--warn)"></i>Read the Verdict</h5>
+          <p style="color:var(--text-muted);font-size:.875rem;line-height:1.6;">Get an instant phishing/legitimate verdict with confidence score and detailed explanation of every warning signal.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-5">
+    <div class="col-lg-8">
+
+      <!-- Getting Started -->
+      <div class="faq-section" data-cat="getting-started">
+        <div class="faq-category"><i class="fa fa-rocket me-2"></i>Getting Started</div>
+
+        <div class="faq-item" data-cat="getting-started">
+          <div class="faq-q" onclick="toggleFaq(this)">
+            What is PhishGuard AI?
+            <i class="fa fa-chevron-down faq-icon"></i>
+          </div>
+          <div class="faq-a">PhishGuard AI is a machine-learning powered URL scanner that detects phishing websites. It uses a Random Forest classifier trained on 30+ URL features to determine whether a link is legitimate or a phishing attempt — all in under one second.</div>
+        </div>
+
+        <div class="faq-item" data-cat="getting-started">
+          <div class="faq-q" onclick="toggleFaq(this)">Is PhishGuard AI free to use?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Yes, entirely free. Create an account with your email (or continue with Google), and you get unlimited URL scans, full history tracking, and detailed analysis reports — no subscription required.</div>
+        </div>
+
+        <div class="faq-item" data-cat="getting-started">
+          <div class="faq-q" onclick="toggleFaq(this)">Do I need technical knowledge to use it?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Not at all. Simply paste a URL and press Scan. The results are presented in plain English, and every warning signal is explained so you can understand exactly why a URL was flagged.</div>
+        </div>
+      </div>
+
+      <!-- URL Scanner -->
+      <div class="faq-section" data-cat="scanner">
+        <div class="faq-category"><i class="fa fa-magnifying-glass me-2"></i>URL Scanner</div>
+
+        <div class="faq-item" data-cat="scanner">
+          <div class="faq-q" onclick="toggleFaq(this)">What types of URLs can I scan?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Any URL — <code>http://</code> or <code>https://</code>. This includes links from emails, WhatsApp messages, SMS, social media posts, QR codes, or any website you've visited. If you're unsure whether a link is safe, scan it first.</div>
+        </div>
+
+        <div class="faq-item" data-cat="scanner">
+          <div class="faq-q" onclick="toggleFaq(this)">How fast is the analysis?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Typically under 500 milliseconds. The model runs locally on the server — there are no external API calls, so results are near-instant regardless of your internet speed.</div>
+        </div>
+
+        <div class="faq-item" data-cat="scanner">
+          <div class="faq-q" onclick="toggleFaq(this)">What does "confidence" mean?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Confidence shows how certain the model is about its verdict, expressed as a percentage. For example, 99% confidence means 198 out of 200 decision trees in our Random Forest agreed on the classification. Higher confidence = stronger signal.</div>
+        </div>
+
+        <div class="faq-item" data-cat="scanner">
+          <div class="faq-q" onclick="toggleFaq(this)">Can it detect all phishing sites?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Our model achieves 100% accuracy on our test dataset, but no system is perfect. Very new phishing domains that mimic legitimate sites perfectly may occasionally pass. Always use PhishGuard AI as a first line of defence — not the only one. If you're in doubt, don't click.</div>
+        </div>
+
+        <div class="faq-item" data-cat="scanner">
+          <div class="faq-q" onclick="toggleFaq(this)">Why are my past URLs saved?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Your scan history is saved to your dashboard so you can review past results, re-read the explanations, or track patterns. You can delete any record at any time from your dashboard. Your history is private and only visible to you.</div>
+        </div>
+      </div>
+
+      <!-- Account -->
+      <div class="faq-section" data-cat="account">
+        <div class="faq-category"><i class="fa fa-user me-2"></i>Account</div>
+
+        <div class="faq-item" data-cat="account">
+          <div class="faq-q" onclick="toggleFaq(this)">How do I change my password?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Go to <strong>My Account</strong> from the top navigation or user menu, then navigate to the <em>Security</em> tab. Enter your current password, then choose a new one. Changes take effect immediately.</div>
+        </div>
+
+        <div class="faq-item" data-cat="account">
+          <div class="faq-q" onclick="toggleFaq(this)">Can I delete my account?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Yes. From <strong>My Account → Danger Zone</strong> you can permanently delete your account along with all associated scan history. This action is irreversible, so please be certain before proceeding.</div>
+        </div>
+
+        <div class="faq-item" data-cat="account">
+          <div class="faq-q" onclick="toggleFaq(this)">What happens when I sign in with Google?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Google OAuth lets you create and sign into your PhishGuard AI account using your existing Google credentials. We only receive your name and email address. We do not access your Gmail, Drive, or any other Google data.</div>
+        </div>
+      </div>
+
+      <!-- Security -->
+      <div class="faq-section" data-cat="security">
+        <div class="faq-category"><i class="fa fa-lock me-2"></i>Security &amp; Privacy</div>
+
+        <div class="faq-item" data-cat="security">
+          <div class="faq-q" onclick="toggleFaq(this)">Is my data safe?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">Passwords are stored as SHA-256 hashes — never in plain text. Your scan history is stored in a private SQLite database and is only accessible to your account. We do not sell or share your data with third parties.</div>
+        </div>
+
+        <div class="faq-item" data-cat="security">
+          <div class="faq-q" onclick="toggleFaq(this)">Does scanning a URL visit the website?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">No. PhishGuard AI analyses the URL string itself — it does not make any HTTP request to the target website. You are never exposed to potentially malicious content during a scan.</div>
+        </div>
+      </div>
+
+      <!-- AI Model -->
+      <div class="faq-section" data-cat="model">
+        <div class="faq-category"><i class="fa fa-robot me-2"></i>The AI Model</div>
+
+        <div class="faq-item" data-cat="model">
+          <div class="faq-q" onclick="toggleFaq(this)">What is a Random Forest classifier?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">A Random Forest is an ensemble machine learning algorithm that builds many decision trees during training and combines their outputs for a final prediction. Each tree votes on the classification, and the majority wins. This makes it highly accurate and resistant to overfitting.</div>
+        </div>
+
+        <div class="faq-item" data-cat="model">
+          <div class="faq-q" onclick="toggleFaq(this)">What features does the model use?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">The model analyses 30+ features including: URL length, domain length, number of dots/hyphens, HTTPS presence, IP address in URL, URL shortener detection, suspicious TLD (<code>.tk</code>, <code>.ml</code>, etc.), suspicious keywords, brand impersonation, subdomain depth, hex encoding, digit ratio, special character count, and more.</div>
+        </div>
+
+        <div class="faq-item" data-cat="model">
+          <div class="faq-q" onclick="toggleFaq(this)">How was the model trained?<i class="fa fa-chevron-down faq-icon"></i></div>
+          <div class="faq-a">The model was trained on a balanced dataset of 1,600 samples (800 legitimate, 800 phishing) drawn from known phishing patterns and real websites. It uses 200 decision trees and was validated with an 80/20 train-test split, achieving 100% accuracy on held-out data.</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <div style="position:sticky;top:calc(var(--navbar-h) + 1rem);">
+        <div class="card-phish p-4 mb-4">
+          <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:1rem;"><i class="fa fa-bolt me-2" style="color:var(--warn)"></i>Common Phishing Signs</h5>
+          <ul style="list-style:none;padding:0;display:flex;flex-direction:column;gap:.6rem;">
+            <li style="font-size:.875rem;color:var(--text-muted);display:flex;gap:.5rem;"><span style="color:var(--danger);flex-shrink:0;">●</span> IP address instead of domain name</li>
+            <li style="font-size:.875rem;color:var(--text-muted);display:flex;gap:.5rem;"><span style="color:var(--danger);flex-shrink:0;">●</span> Suspicious TLDs like .tk, .ml, .ga</li>
+            <li style="font-size:.875rem;color:var(--text-muted);display:flex;gap:.5rem;"><span style="color:var(--danger);flex-shrink:0;">●</span> Brand name in subdomain (not root)</li>
+            <li style="font-size:.875rem;color:var(--text-muted);display:flex;gap:.5rem;"><span style="color:var(--danger);flex-shrink:0;">●</span> Keywords: "verify", "secure", "login"</li>
+            <li style="font-size:.875rem;color:var(--text-muted);display:flex;gap:.5rem;"><span style="color:var(--danger);flex-shrink:0;">●</span> No HTTPS encryption</li>
+            <li style="font-size:.875rem;color:var(--text-muted);display:flex;gap:.5rem;"><span style="color:var(--danger);flex-shrink:0;">●</span> Very long or cluttered URLs</li>
+            <li style="font-size:.875rem;color:var(--text-muted);display:flex;gap:.5rem;"><span style="color:var(--danger);flex-shrink:0;">●</span> URL shorteners hiding destination</li>
+            <li style="font-size:.875rem;color:var(--text-muted);display:flex;gap:.5rem;"><span style="color:var(--danger);flex-shrink:0;">●</span> @ symbol in the URL path</li>
+          </ul>
+        </div>
+
+        <div class="card-phish p-4">
+          <h5 style="font-family:var(--font-head);font-weight:700;margin-bottom:1rem;"><i class="fa fa-headset me-2" style="color:var(--accent)"></i>Still Need Help?</h5>
+          <p style="color:var(--text-muted);font-size:.875rem;margin-bottom:1.25rem;line-height:1.7;">Can't find the answer you're looking for? Our team is happy to help.</p>
+          <a href="{{ url_for('contact') }}" class="btn-phish btn w-100 justify-content-center">
+            <i class="fa fa-envelope me-2"></i>Contact Support
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleFaq(el){
+  const item=el.closest('.faq-item');
+  const isOpen=item.classList.contains('open');
+  document.querySelectorAll('.faq-item.open').forEach(i=>i.classList.remove('open'));
+  if(!isOpen)item.classList.add('open');
+}
+
+// Category filter
+document.querySelectorAll('.cat-pill').forEach(pill=>{
+  pill.addEventListener('click',()=>{
+    document.querySelectorAll('.cat-pill').forEach(p=>p.classList.remove('active'));
+    pill.classList.add('active');
+    const cat=pill.dataset.cat;
+    document.querySelectorAll('.faq-item').forEach(item=>{
+      if(cat==='all'||item.dataset.cat===cat){item.classList.remove('hidden');}
+      else{item.classList.add('hidden');item.classList.remove('open');}
+    });
+    document.querySelectorAll('.faq-section').forEach(section=>{
+      const visible=section.querySelectorAll('.faq-item:not(.hidden)').length;
+      section.style.display=visible?'':'none';
+    });
+  });
+});
+
+// Search
+document.getElementById('faqSearch').addEventListener('input',function(){
+  const q=this.value.toLowerCase().trim();
+  document.querySelectorAll('.faq-item').forEach(item=>{
+    const text=item.textContent.toLowerCase();
+    item.classList.toggle('hidden',q&&!text.includes(q));
+  });
+  document.querySelectorAll('.faq-section').forEach(section=>{
+    const visible=section.querySelectorAll('.faq-item:not(.hidden)').length;
+    section.style.display=visible?'':'none';
+  });
+  if(!q){
+    document.querySelectorAll('.faq-section').forEach(s=>s.style.display='');
+    document.querySelectorAll('.cat-pill.active:not([data-cat="all"])').forEach(p=>{p.classList.remove('active');document.querySelector('[data-cat="all"]').classList.add('active');});
+  }
+});
+</script>
+{% endblock %}
