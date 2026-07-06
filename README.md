@@ -38,7 +38,7 @@ Phishing-Website-Detection/
 1. Clone the repository
 
 ```bash
-git clone https://github.com/misbahmarcha/Phishing-Website-Detection.git
+git clone https://github.com/misbahmarcha-pixel/Phishing-Website-Detection
 ```
 
 2. Navigate to the project folder
